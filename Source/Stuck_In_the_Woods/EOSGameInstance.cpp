@@ -74,7 +74,7 @@ void UEOSGameInstance::CreateSession()
 				SessionSettings.bAllowJoinViaPresence = true;
 				SessionSettings.bUsesPresence = true;
 				SessionSettings.bUseLobbiesIfAvailable = true;
-				SessionSettings.Set("SEARCH_KEYWORDS", FString("Lobby"), EOnlineDataAdvertisementType::ViaOnlineService);
+				SessionSettings.Set(FName(TEXT("SEARCHKEYWORDS")), FString("Lobby"), EOnlineDataAdvertisementType::ViaOnlineService);
 
 				SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
 				SessionPtr->CreateSession(0, SessionNameConst, SessionSettings);
@@ -136,8 +136,8 @@ void UEOSGameInstance::FindSession()
 			{
 				SearchSettings = MakeShareable(new FOnlineSessionSearch());
 				SearchSettings->MaxSearchResults = 5000;
-				SearchSettings->QuerySettings.Set("SEARCH_KEYWORDS", FString("Lobby"), EOnlineComparisonOp::Equals);
-				SearchSettings->QuerySettings.Set("SEARCH_LOBBIES", true, EOnlineComparisonOp::Equals);
+				SearchSettings->QuerySettings.Set(FName(TEXT("SEARCHKEYWORDS")), FString("Lobby"), EOnlineComparisonOp::Equals);
+				SearchSettings->QuerySettings.Set("LOBBYSEARCH", true, EOnlineComparisonOp::Equals);
 
 				SessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnFindSessionsComplete);
 				SessionPtr->FindSessions(0, SearchSettings.ToSharedRef());
