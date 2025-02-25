@@ -28,6 +28,15 @@ public:
 	void CreateSession();
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
 
+	UFUNCTION(BlueprintCallable)
+	void DestroySession();
+	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+
+	UFUNCTION(BlueprintCallable)
+	void FindSession();
+	void OnFindSessionsComplete(bool bWasSuccesul);
+	TSharedPtr<class FOnlineSessionSearch> SearchSettings;
+
 protected :
 	class IOnlineSubsystem* OnlineSubsystem;
 

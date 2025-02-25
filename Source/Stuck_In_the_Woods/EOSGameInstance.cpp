@@ -7,6 +7,8 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 
+const FName SessionNameConst = FName("Test Session");
+
 UEOSGameInstance::UEOSGameInstance()
 {
 	bIsLoggedIn = false;
@@ -75,7 +77,7 @@ void UEOSGameInstance::CreateSession()
 				SessionSettings.Set("SEARCH_KEYWORDS", FString("Lobby"), EOnlineDataAdvertisementType::ViaOnlineService);
 
 				SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnCreateSessionComplete);
-				SessionPtr->CreateSession(0, FName("Test Session"), SessionSettings);
+				SessionPtr->CreateSession(0, SessionNameConst, SessionSettings);
 			}
 		}
 	}
@@ -94,6 +96,70 @@ void UEOSGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
 		{
 			SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
+		}
+	}
+}
+
+void UEOSGameInstance::DestroySession()
+{
+	if (bIsLoggedIn)
+	{
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				SessionPtr->OnDestroySessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnDestroySessionComplete);
+				SessionPtr->DestroySession(SessionNameConst);
+			}
+		}
+	}
+}
+
+void UEOSGameInstance::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if (OnlineSubsystem)
+	{
+		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+		{
+			SessionPtr->ClearOnDestroySessionCompleteDelegates(this);
+		}
+	}
+}
+
+void UEOSGameInstance::FindSession()
+{
+	if (bIsLoggedIn)
+	{
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				SearchSettings = MakeShareable(new FOnlineSessionSearch());
+				SearchSettings->MaxSearchResults = 5000;
+				SearchSettings->QuerySettings.Set("SEARCH_KEYWORDS", FString("Lobby"), EOnlineComparisonOp::Equals);
+				SearchSettings->QuerySettings.Set("SEARCH_LOBBIES", true, EOnlineComparisonOp::Equals);
+
+				SessionPtr->OnFindSessionsCompleteDelegates.AddUObject(this, &UEOSGameInstance::OnFindSessionsComplete);
+				SessionPtr->FindSessions(0, SearchSettings.ToSharedRef());
+			}
+		}
+	}
+}
+
+void UEOSGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Success : %d"), bWasSuccessful);
+	
+	if (bWasSuccessful) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
+	}
+
+	if (OnlineSubsystem)
+	{
+		if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+		{
+			SessionPtr->ClearOnFindSessionsCompleteDelegates(this);
 		}
 	}
 }
