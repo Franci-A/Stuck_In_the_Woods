@@ -153,6 +153,18 @@ void UEOSGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 	if (bWasSuccessful) 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Found %d Lobbies"), SearchSettings->SearchResults.Num());
+
+		if (OnlineSubsystem)
+		{
+			if (IOnlineSessionPtr SessionPtr = OnlineSubsystem->GetSessionInterface())
+			{
+				if (SearchSettings->SearchResults.Num()) 
+				{
+					SessionPtr->OnJoinSessionCompleteDelegates.AddUObject(this, &UEOSGameInstance::);
+					SessionPtr->JoinSession(0, SessionNameConst, SearchSettings->SearchResults[0]);
+				}
+			}
+		}
 	}
 
 	if (OnlineSubsystem)
